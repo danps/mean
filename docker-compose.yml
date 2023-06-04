@@ -1,0 +1,42 @@
+version: '3.8'
+
+networks:
+  backend:
+  frontend:
+
+services: 
+  db:
+    image: mongo:6.0.6
+    container_name: db
+    restart: always
+    ports:
+      - ${DB_PORT}:27017
+    environment:
+      MONGO_INITDB_DATABASE: ${DB_NAME}
+      MONGO_INITDB_ROOT_USERNAME: ${DB_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${DB_PASS}
+    networks:
+      - backend
+  api:
+    image: node:latest
+    container_name: api
+    restart: always
+    env_file:
+     - .env
+    networks:
+      - backend 
+      - frontend
+    depends_on:
+      - db
+    ports:
+      - ${SERVER_PORT}:${SERVER_PORT}
+    volumes:
+      - .:/usr/src/app
+    working_dir: /usr/src/app
+    command: yarn start
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+  
